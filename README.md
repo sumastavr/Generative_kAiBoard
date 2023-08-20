@@ -6,4 +6,11 @@ The keyboard seamlessly integrates an 8x8 multizone time-of-flight sensor, usher
 
 The "Generative KAiboard" transcends conventional interfaces, featuring a mono speaker for audio feedback and alerts. Its centerpiece is a 5-inch LCD display with a capacitive touch screen, offering a dynamic hub of information and interaction. Complemented by 60 RGB LEDs along the sides, the keyboard creates an enchanting symphony of light diffused through its translucent housing. The integration of a W5300 shield and Nucleo board ensures future-proof modularity, enabling seamless upgrades and adaptability to evolving technologies. This extraordinary convergence of innovation, design, and intelligence marks the dawn of the "Generative KAiboard," a catalyst for the next generation of human-computer interaction." -Generative kAiboard.
 
-https://github.com/sumastavr/Generative_kAiBoard/blob/main/Media/2023-08-20%2000%2004%2033.jpg?raw=true 
+![image](https://github.com/sumastavr/Generative_kAiBoard/assets/72283566/d8cd424e-bdd2-4d96-a8ba-f4ea38353524)
+
+![image](https://github.com/sumastavr/Generative_kAiBoard/assets/72283566/4fd82195-c9b6-4035-8879-96a86e2ffe72)
+
+![image](https://github.com/sumastavr/Generative_kAiBoard/assets/72283566/d1a8afea-ec4d-4613-8f76-b2e9a30f1057)
+
+
+
