@@ -10,6 +10,10 @@ The "Generative KAiboard" transcends conventional interfaces, featuring a mono s
 
 ![image](https://github.com/sumastavr/Generative_kAiBoard/assets/72283566/4fd82195-c9b6-4035-8879-96a86e2ffe72)
 
+![image](https://github.com/sumastavr/Generative_kAiBoard/assets/72283566/64bc72e8-fec0-4155-beac-cf747ef8b701)
+
+![image](https://github.com/sumastavr/Generative_kAiBoard/assets/72283566/f71959d6-34de-4d9d-b32a-d84eefa6d60f)
+
 ![image](https://github.com/sumastavr/Generative_kAiBoard/assets/72283566/d1a8afea-ec4d-4613-8f76-b2e9a30f1057)
 
 
