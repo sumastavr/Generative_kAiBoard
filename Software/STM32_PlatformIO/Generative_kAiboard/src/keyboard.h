@@ -174,3 +174,9 @@ void printDebugKeyboard(){
 
 }
 
+void initTypeCounter(){
+  clickCounter=readKeyCountEEP();
+  setTypeCounterBrightness(40);
+  displayTypeCounter(clickCounter);
+}
+

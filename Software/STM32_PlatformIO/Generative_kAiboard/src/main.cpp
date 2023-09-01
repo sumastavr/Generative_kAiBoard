@@ -47,21 +47,15 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "openAI.h"
 #include "keyboard.h"
 
-void lockdevice();
-void wakeDevice();
-void sleepDevice();
-
-unsigned long beginMicros, endMicros;
-unsigned long byteCount = 0;
-bool printWebData = true;  // set to false for better speed measurement
-
 #define STATE_BASIC_KEYBOARD  0
 #define STATE_CHAT_GPT_QUERY  1
 #define STATE_CHAT_GPT_STREAM 2
 #define STATE_DEVICE_LOCKED   99
 #define STATE_DEVICE_SLEEP    88
 
-byte STATE_TRACKER = 0;
+byte STATE_TRACKER = STATE_BASIC_KEYBOARD;
+
+#include "logic.h"
 
 void setup() {
 
@@ -73,15 +67,8 @@ void setup() {
   initEEPROM();
   initGPIO();
   initEthernetDHCP(2000);
-
-  delay(250);
-
-  //safeCurrentState(0);
-  clickCounter=readKeyCountEEP();
+  initTypeCounter();
   STATE_TRACKER=readCurrentState();
-
-  setTypeCounterBrightness(40);
-  displayTypeCounter(clickCounter);
 
 }
 
@@ -89,6 +76,7 @@ void loop() {
 
   IWatchdog.reload();
 
+  monitorKeycount();
   int inputSpecialKeys=scanSpecialKeys();
   char input=scanKeyboard();
 
@@ -210,55 +198,8 @@ void loop() {
         }
 
         break;
-
   }
-
-  if(millis()-timerSaveKeycount>intervalSaveKeycount){
-    if(safeKeycountEEP(clickCounter)){
-      Serial.println("Keycount Saved");
-    }else{
-      Serial.println("Saving Keycount FAILED");
-    }
-    timerSaveKeycount=millis();
-  }
-
 }
 
-void lockdevice(){
-  playVideo(VID_LOCK,100);
-  STATE_TRACKER=STATE_DEVICE_LOCKED;
-  safeCurrentState(STATE_TRACKER);
-  changeLightMode(LED_MODE_PLASMA);
-  sendTextLCD(STATUS_BAR,"device locked");
-}
 
-void sleepDevice(){
-  STATE_TRACKER=STATE_DEVICE_SLEEP;
-  safeCurrentState(STATE_TRACKER);
-  analogWrite(PORT_LOGO_PWM_R,255);
-  analogWrite(PORT_7S_ENABLE,255);
-
-  gotoPage("main_2");
-  delay(500);
-  playVideo(VID_GOTO_SLEEP,100);
-  delay(5500);
-  sleepLCD();
-  sleepModeLight(1);
-}
-
-void wakeDevice(){
-  wakeLCD();
-  delay(1000);
-  sleepModeLight(0);
-  playVideo(VID_GOTO_WAKE,100);
-  analogWrite(PORT_LOGO_PWM_R,200);
-  analogWrite(PORT_7S_ENABLE,40);
-  STATE_TRACKER=STATE_BASIC_KEYBOARD;
-  safeCurrentState(STATE_TRACKER);
-  sendTextLCD(STATUS_BAR,"keyboard mode");
-  changeLightMode(LED_MODE_PLASMA);
-  clearTextLCD(INPUT_KBD);
-  clearTextLCD(OUTPUT_GPT);
-  buzzMotor(1,500);
-}
 
