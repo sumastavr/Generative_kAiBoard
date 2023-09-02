@@ -53,7 +53,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define STATE_DEVICE_LOCKED   99
 #define STATE_DEVICE_SLEEP    88
 
-byte STATE_TRACKER = STATE_BASIC_KEYBOARD;
+byte STATE_TRACKER = 0;
 
 #include "logic.h"
 
@@ -65,10 +65,12 @@ void setup() {
   initLCDSerial();
   initBLE();
   initEEPROM();
-  initGPIO();
   initEthernetDHCP(2000);
+  initGPIO();
   initTypeCounter();
   STATE_TRACKER=readCurrentState();
+  Serial.print("Current State: ");
+  Serial.println(STATE_TRACKER);
 
 }
 

@@ -95,11 +95,13 @@ char scanKeyboard(){
         }
         //Serial.print(caseMux[i][z]);
         //Serial.print(caseMux[i][z]);
-        //Serial.print(" STATE: ");
-        //Serial.print(i);
-        //Serial.print(" MUX: ");
-        //Serial.println(z);
-        //delay(100);
+        /*
+        Serial.print(" STATE: ");
+        Serial.print(i);
+        Serial.print(" MUX: ");
+        Serial.println(z);
+        delay(100);
+        */
       }
 
       prevKeyStates[i][z]=keyStates[i][z];

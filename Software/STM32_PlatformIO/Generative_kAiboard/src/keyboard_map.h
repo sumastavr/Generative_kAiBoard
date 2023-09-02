@@ -33,22 +33,34 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <Arduino.h>
 
-const char caseMux[][4]  = {{'3'  ,'b'  ,'0'  ,' '  }, // case 0
-                            {NULL ,'g'  ,NULL ,' '  }, // case 1
-                            {'z'  ,'t'  ,'<'  , 13  }, // case 2
-                            {'a'  ,'6'  ,'k'  , 8   }, // case 3
-                            {'q'  ,'v'  ,'i'  , 13  }, // case 4
-                            {'2'  ,'f'  ,'9'  ,'@'  }, // case 5
-                            {NULL ,'r'  ,NULL ,'~'  }, // case 6
+#define EN  13 // enter
+#define AS  96 // asterisks
+#define SH  254 // shift
+#define DL  127  
+#define BL  92 // back slash
+#define BS  8 // backspace
+#define VT  11 // vertical tab
+#define ES  27 // Escape
+#define CT  253 // Control
+#define SP  252 // Windows Super
+#define AL  251 // ALT
+
+const char caseMux[][4]  = {{'3'  ,'b'  ,'0'  , SH  }, // case 0
+                            { SP  ,'g'  ,NULL , EN  }, // case 1
+                            {'z'  ,'t'  ,','  ,']'  }, // case 2
+                            {'a'  ,'6'  ,'k'  , BS  }, // case 3
+                            {'q'  ,'v'  ,'i'  ,' '  }, // case 4
+                            {'2'  ,'f'  ,'9'  , AS  }, // case 5
+                            { CT  ,'r'  , DL  ,'['  }, // case 6
                             {'|'  ,'5'  ,'m'  ,'+'  }, // case 7
                             {']'  ,'c'  ,'j'  ,'/'  }, // case 8
-                            {'['  ,'d'  ,'u'  ,';'  }, // case 9
+                            { BL  ,'d'  ,'u'  ,';'  }, // case 9
                             {'1'  ,'e'  ,'8'  ,'p'  }, // case 10
-                            {NULL ,'4'  ,' '  ,'-'  }, // case 11
-                            {NULL ,NULL ,'n'  ,NULL }, // case 12
-                            {NULL ,'x'  ,'h'  ,'>'  }, // case 13
-                            {NULL ,'s'  ,'y'  ,'l'  }, // case 14
-                            {27   ,'w'  ,'7'  ,'o'  }  // case 15
+                            { SH  ,'4'  ,' '  ,'-'  }, // case 11
+                            {NULL , AL  ,'n'  ,NULL }, // case 12
+                            {NULL ,'x'  ,'h'  ,'.'  }, // case 13
+                            { VT  ,'s'  ,'y'  ,'l'  }, // case 14
+                            { ES  ,'w'  ,'7'  ,'o'  }  // case 15
                             };
 
 const uint8_t digits_7s[10] = {     0b00011000,  // digit 0
