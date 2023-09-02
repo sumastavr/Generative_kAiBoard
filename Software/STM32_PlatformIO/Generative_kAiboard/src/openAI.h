@@ -113,17 +113,20 @@ String openAI_chat(String message) {
             state=false;
             getResponse = getResponse.substring(0,getResponse.length()-3);
             
-            String spacer="";
-            spacer+=(char)0x5C;
-            spacer+=(char)0x6E;
-            getResponse.replace(spacer," ");
+            // search /n in the reply and replace it to /r for display
+            String GPTspacer="";
+            GPTspacer+=(char)0x5C;
+            GPTspacer+=(char)0x6E;
+            String NXTspacer="";
+            NXTspacer+=(char)0x0D;
+            NXTspacer+=(char)0x0A;
+            String toDisplay=getResponse;
+            toDisplay.replace(GPTspacer,NXTspacer);
 
-            clearTextLCD(STATUS_BAR);
-            sendTextLCD(OUTPUT_GPT,getResponse);
-            IWatchdog.begin(10000);
-
-            client.flush();
-            client.stop();
+            sendTextLCD(STATUS_BAR,"press ESCape to stream");
+            sendTextLCD(OUTPUT_GPT,toDisplay);
+            replied=true;
+            break;
 
           } else if (getResponse.indexOf("\"")!=-1 && c == '\n' && state==true) {
             state=false;
