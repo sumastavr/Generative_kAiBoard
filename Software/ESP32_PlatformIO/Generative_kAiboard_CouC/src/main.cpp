@@ -272,10 +272,12 @@ void loop() {
           }
           Serial2.flush();
         }
+      }else{
+        Serial.write(in);
+        bleKeyboard.print(char(in));
+        //bleKeyboard.write(in);
       }
-      Serial.write(in);
-      bleKeyboard.print(char(in));
-      //bleKeyboard.write(in);
+      
     }
   }
 }
