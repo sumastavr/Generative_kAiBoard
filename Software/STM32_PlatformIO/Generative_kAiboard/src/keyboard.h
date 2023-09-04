@@ -123,13 +123,9 @@ int scanSpecialKeys(){
     if (specialKeys[i]==LOW && specialKeys[i]!=prevSpecialKeys[i]) {
       //Serial.print("SP_K:");
       //Serial.println(i);
-      /*
-      if (specialKeys[4]==LOW && STATE_TRACKER!=STATE_DEVICE_LOCKED){
-        lockdevice();
-      }else if(specialKeys[2]==LOW && STATE_TRACKER!=STATE_DEVICE_SLEEP){
-        sleepDevice();
-      }
-      */
+      
+
+      
 
       return i;
     }

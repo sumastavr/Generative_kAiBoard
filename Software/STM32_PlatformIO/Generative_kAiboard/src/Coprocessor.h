@@ -82,7 +82,7 @@ void streamGPTResults(String answer){
     }
 }
 
-void changeLightMode(int mode){
+void changeLightMode(byte mode){
 
     String payload="";
     payload+=(char)LEDCHANGEHEADER;
@@ -93,7 +93,7 @@ void changeLightMode(int mode){
 
 }
 
-void sleepModeLight(int state){
+void sleepModeLight(byte state){
     String payload="";
     payload+=(char)LEDSLEEPMODEHEADER;
     payload+=String(state);

@@ -58,8 +58,9 @@ String openAI_chat(String message) {
   Serial.println(client.connected());
 
   if (client.connect(server, 443)) {
-
-    sendTextLCD(STATUS_BAR,"I'm thinking...");
+    
+    IWatchdog.reload();
+    sendTextLCD(STATUS_BAR,"GENERATING ANSWERS");
     clearTextLCD(OUTPUT_GPT);
 
     client.println("POST /v1/chat/completions HTTP/1.1");
@@ -81,14 +82,19 @@ String openAI_chat(String message) {
     long startTime = millis();
     bool replied=false;
 
+    showObjectLCD(GPT_BAR_PARA);
+    byte progress=0;
+
     while ((startTime + waitTime) > millis() && !replied) {
 
       Serial.print("Generating: ");
       Serial.println(millis()-startTime);
-      delay(100);
+      progress++;
+      setProgressBar(GPT_BAR,progress);
+      delay(300);
     
       while (client.available()>0 && !replied) {
-          //IWatchdog.begin(4000000);
+
           char c = client.read();
           Serial.print(c);
           
@@ -113,20 +119,17 @@ String openAI_chat(String message) {
             state=false;
             getResponse = getResponse.substring(0,getResponse.length()-3);
             
-            // search /n in the reply and replace it to /r for display
-            String GPTspacer="";
-            GPTspacer+=(char)0x5C;
-            GPTspacer+=(char)0x6E;
-            String NXTspacer="";
-            NXTspacer+=(char)0x0D;
-            NXTspacer+=(char)0x0A;
-            String toDisplay=getResponse;
-            toDisplay.replace(GPTspacer,NXTspacer);
+            String spacer="";
+            spacer+=(char)0x5C;
+            spacer+=(char)0x6E;
+            getResponse.replace(spacer," ");
 
-            sendTextLCD(STATUS_BAR,"press ESCape to stream");
-            sendTextLCD(OUTPUT_GPT,toDisplay);
-            replied=true;
-            break;
+            clearTextLCD(STATUS_BAR);
+            sendTextLCD(OUTPUT_GPT,getResponse);
+            IWatchdog.begin(10000);
+
+            client.flush();
+            client.stop();
 
           } else if (getResponse.indexOf("\"")!=-1 && c == '\n' && state==true) {
             state=false;
@@ -144,6 +147,7 @@ String openAI_chat(String message) {
 
             sendTextLCD(STATUS_BAR,"press ESCape to stream");
             sendTextLCD(OUTPUT_GPT,toDisplay);
+            hideObjectLCD(GPT_BAR_PARA);
             replied=true;
             break;
           }    

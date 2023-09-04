@@ -46,6 +46,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "ethernetSSL.h"
 #include "openAI.h"
 #include "keyboard.h"
+#include "time.h"
 
 #define STATE_BASIC_KEYBOARD  0
 #define STATE_CHAT_GPT_QUERY  1
@@ -71,33 +72,35 @@ void setup() {
   STATE_TRACKER=readCurrentState();
   Serial.print("Current State: ");
   Serial.println(STATE_TRACKER);
-
+  sendNTPpacket(TIME_SERVER);
 }
+
 
 void loop() {
 
   IWatchdog.reload();
-
   monitorKeycount();
+
   int inputSpecialKeys=scanSpecialKeys();
   char input=scanKeyboard();
+
+  if (specialKeys[4]==LOW && STATE_TRACKER!=STATE_DEVICE_LOCKED){
+    lockdevice();
+  }else if(specialKeys[2]==LOW && STATE_TRACKER!=STATE_DEVICE_SLEEP){
+    sleepDevice();
+  }
 
   switch(STATE_TRACKER){
 
     case STATE_BASIC_KEYBOARD:
-          if(input!=NULL){
-            sendChar(input);
-            delay(100);
-          }
 
+          monitorClock();
+          
           if(input==' ' && inputSpecialKeys==0){
-            STATE_TRACKER=STATE_CHAT_GPT_QUERY;
-            safeCurrentState(STATE_TRACKER);
-            changeLightMode(LED_MODE_SIDERAIN);
-            stopCurrentVideo();
-            sendTextLCD(STATUS_BAR,"Chat GPT MODE");
-            sendTextLCD(INPUT_KBD,"ask me anything...");
-            buzzMotor(2,250);
+            toChatGPTMode();
+          }else if(input!=NULL){
+            sendChar(input);
+            delay(50);
           }
 
           break;
@@ -139,16 +142,8 @@ void loop() {
         }
 
         if(input==' ' && inputSpecialKeys==0){
-            playVideo(VID_INTRO,0);
-            STATE_TRACKER=STATE_BASIC_KEYBOARD;
-            safeCurrentState(STATE_TRACKER);
-            sendTextLCD(STATUS_BAR,"keyboard mode");
-            changeLightMode(LED_MODE_PLASMA);
-            clearTextLCD(INPUT_KBD);
-            clearTextLCD(OUTPUT_GPT);
-            buzzMotor(1,500);
+          toKeyboardMode();
         }
-
 
         break;
     
@@ -168,6 +163,7 @@ void loop() {
         break;
 
     case STATE_DEVICE_LOCKED:
+        monitorClock();
         if (!NFCInitialized){
           initNFC();
         }else{

@@ -55,6 +55,15 @@ HardwareSerial LCD(USART6);
 #define VID_GOTO_WAKE   "v7"
 #define VID_OUTRO       "v8"
 
+#define CLOCK_LCD       "t10.txt"
+#define CLOCK_PARA      "t10"
+#define DATE_LCD        "t11.txt"
+#define DATE_PARA       "t11"
+#define SEC_BAR_PARA    "j1"
+#define SEC_BAR         "j1.val"
+
+#define GPT_BAR_PARA    "j0"
+#define GPT_BAR         "j0.val"
 
 //#define DEBUG_LCD
 
@@ -290,7 +299,36 @@ void gotoPage(String page){
     payload+=page;
     sendPayload(payload);
     sendTermination();
-    delay(10);
+    delay(3);
+}
+
+void hideObjectLCD(String name){
+    String payload="vis ";
+    payload+=name;
+    payload+=",0";
+    sendPayload(payload);
+    sendTermination();
+    delay(3);
+}
+
+void showObjectLCD(String name){
+    String payload="vis ";
+    payload+=name;
+    payload+=",1";
+    sendPayload(payload);
+    sendTermination();
+    delay(3);
+}
+
+void setProgressBar(String name, int state){
+    if(state<=100){
+        String payload=name;
+        payload+="=";
+        payload+=String(state);
+        sendPayload(payload);
+        sendTermination();
+        delay(3);
+    }
 }
 
   /*
