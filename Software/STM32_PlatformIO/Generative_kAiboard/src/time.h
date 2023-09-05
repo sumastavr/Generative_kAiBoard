@@ -8,7 +8,9 @@
 
 /* Time */
 #define SEVENTY_YEARS (2208988800UL)
-#define TIME_SERVER   "time.nist.gov"
+//#define TIME_SERVER   "time.nist.gov"
+#define TIME_SERVER   "pool.ntp.org"
+
 
 unsigned long highWord;
 unsigned long lowWord;
@@ -17,7 +19,7 @@ unsigned long epoch;
 
 const int timeZone = 2; // CET
 
-unsigned int localPort = 5000;      
+unsigned int localPort = 123;      
 
 byte packetBuffer[NTP_PACKET_SIZE]; 
 EthernetUDP Udp;

@@ -49,6 +49,19 @@ uint32_t clickCounter=0;
 long timerSaveKeycount=millis();
 long intervalSaveKeycount=1800000;
 
+void initVariables(){
+  for (int i=0;i<16;i++){
+    for (int x=0;x<4;x++){
+      keyStates[i][x]=1;
+      prevKeyStates[i][x]=1;
+    }
+  }
+  for (int i=0;i<6;i++){
+    specialKeys[i]=1;
+    prevSpecialKeys[i]=1;
+  }
+}
+
 void setTypeCounterBrightness(int value){
     analogWrite(PORT_7S_ENABLE,value);
 }
@@ -67,6 +80,9 @@ void displayTypeCounter(uint32_t clickCount){
 
 }
 
+bool currentKeyState=false;
+bool currentSpKeyState=false;
+
 char scanKeyboard(){
 
   // Scan through all possible MUX combination from S0 to S3
@@ -81,28 +97,39 @@ char scanKeyboard(){
       bool pinState=digitalRead(MUX_READ_PINS[z]);
       keyStates[i][z]=pinState;
       
-      if (pinState==LOW){
-
+      //if (pinState==LOW){
+        
+        currentKeyState=false;
         if(pinState!=prevKeyStates[i][z]){
-          if(caseMux[i][z]==8){ // backspace
+          prevKeyStates[i][z]=keyStates[i][z];
+          displayTypeCounter(++clickCounter);
+
+          if(pinState){
+            Serial.print("R: ");
+            Serial.println(caseMux[i][z]);
+            currentKeyState=false;
+            //delay(10);
             prevKeyStates[i][z]=keyStates[i][z];
             return caseMux[i][z];
           }else{
+            //Serial.print(" STATE: ");
+            //Serial.print(i);
+            //Serial.print(" MUX: ");
+            //Serial.println(z);
+            //delay(500);
+            Serial.print("P: ");
+            Serial.println(caseMux[i][z]);
+            currentKeyState=true;
+            //delay(10);
             prevKeyStates[i][z]=keyStates[i][z];
-            displayTypeCounter(++clickCounter);
             return caseMux[i][z];
           }
+                    
         }
+
         //Serial.print(caseMux[i][z]);
         //Serial.print(caseMux[i][z]);
-        /*
-        Serial.print(" STATE: ");
-        Serial.print(i);
-        Serial.print(" MUX: ");
-        Serial.println(z);
-        delay(100);
-        */
-      }
+      //}
 
       prevKeyStates[i][z]=keyStates[i][z];
     }
@@ -119,14 +146,17 @@ int scanSpecialKeys(){
   specialKeys[4]=digitalRead(PIN_KBD_R_SPK_2);
   specialKeys[5]=digitalRead(PIN_KBD_R_SPK_3);
 
+  currentSpKeyState=false;
+
   for (int i=0;i<6;i++){
-    if (specialKeys[i]==LOW && specialKeys[i]!=prevSpecialKeys[i]) {
-      //Serial.print("SP_K:");
-      //Serial.println(i);
-      
-
-      
-
+    if (specialKeys[i]!=prevSpecialKeys[i]){
+      if(specialKeys[i]==LOW){
+        currentSpKeyState=true;
+        //Serial.println(i);
+      }else{
+        currentSpKeyState=false;
+      }
+      prevSpecialKeys[i]=specialKeys[i];
       return i;
     }
   }
@@ -134,20 +164,28 @@ int scanSpecialKeys(){
   for (int i=0;i<6;i++){
     prevSpecialKeys[i]=specialKeys[i];
   }
+
   return 99;
 }
 
-bool isPrintableKey(int channel, int mux){
-  return true;
+bool isPrintableKey(char in){
+  bool printable=true;
+  for (int i=0;i<nonPrintableTotal;i++){
+    if (nonPrintable[i]==in){
+      printable=false;
+      return printable;
+    }
+  }
+  return printable;
 }
 
 void printKeys(){
   for (uint8_t i=0;i<scanIteration;i++){
     for (uint8_t x=0; x<4; x++){
       if (keyStates[i][x]==LOW){       
-        if (isPrintableKey(i,x)){
+        //if (isPrintableKey(i,x)){
           //Serial.print(caseMux[i][x]);
-        }
+        //}
       }
     }
   }

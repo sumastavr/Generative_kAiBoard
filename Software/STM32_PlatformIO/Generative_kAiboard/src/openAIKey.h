@@ -32,4 +32,4 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #include <Arduino.h>
-String openaiKey = "";
+String openaiKey = "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";

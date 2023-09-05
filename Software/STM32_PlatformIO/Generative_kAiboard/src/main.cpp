@@ -69,6 +69,7 @@ void setup() {
   initEthernetDHCP(2000);
   initGPIO();
   initTypeCounter();
+  initVariables();
   STATE_TRACKER=readCurrentState();
   Serial.print("Current State: ");
   Serial.println(STATE_TRACKER);
@@ -84,9 +85,9 @@ void loop() {
   int inputSpecialKeys=scanSpecialKeys();
   char input=scanKeyboard();
 
-  if (specialKeys[4]==LOW && STATE_TRACKER!=STATE_DEVICE_LOCKED){
+  if (inputSpecialKeys==SP_KEY_A){
     lockdevice();
-  }else if(specialKeys[2]==LOW && STATE_TRACKER!=STATE_DEVICE_SLEEP){
+  }else if(inputSpecialKeys==SP_KEY_B){
     sleepDevice();
   }
 
@@ -96,40 +97,73 @@ void loop() {
 
           monitorClock();
           
-          if(input==' ' && inputSpecialKeys==0){
-            toChatGPTMode();
-          }else if(input!=NULL){
-            sendChar(input);
-            delay(50);
+          if(inputSpecialKeys==SP_KEY_C && currentSpKeyState) toChatGPTMode();
+        
+          if(input!=NULL){
+            if(currentKeyState){
+              pressChar(input);
+            }else{
+              releaseChar(input);
+            }
+            delay(20);
+          }
+
+          switch(inputSpecialKeys){
+            case SP_KEY_F:
+              if(currentSpKeyState){
+                pressChar(CT);
+              }else{
+                releaseChar(CT);
+              }
+              break; 
+            case SP_KEY_E:
+              if(currentSpKeyState){
+                pressChar(AL);
+              }else{
+                releaseChar(AL);
+              }
+              break;
+            case SP_KEY_D:
+              if(currentSpKeyState){
+                pressChar(SP);
+              }else{
+                releaseChar(SP);
+              }
+              break;     
           }
 
           break;
 
     case STATE_CHAT_GPT_QUERY:
-        if(input!=NULL){
-          if(input==8){
+
+        if(inputSpecialKeys==SP_KEY_C && currentSpKeyState) toKeyboardMode();
+
+        if(currentKeyState){
+          if(input==BS){
             delTextLCD(INPUT_KBD,1);
             delay(100);
-          }else if(input==27){ // Escape key
+          }else if(input==ES){ // Escape key
             playVideo(VID_DISENGAGE,100);
             STATE_TRACKER=2;
             safeCurrentState(STATE_TRACKER);
             buzzMotor(2,250);
             sendTextLCD(STATUS_BAR, "Disengage the gpt interlock");
-          }else if(input==13){
+          }else if(input==EN){
             buzzMotor(2,250);
             openAI_chat(getTextLCD(INPUT_KBD,0));
-          }else{          
-            appendTextLCD(INPUT_KBD,String(input));
-            delay(100);
+          }else{
+            if(isPrintableKey(input)){      
+              if(currentKeyState){    
+                appendTextLCD(INPUT_KBD,String(input));
+                delay(50);
+              }
+            }
           }
         }
 
         if(inputSpecialKeys<6){
           switch(inputSpecialKeys){
-          case 5: //playVideo(VID_TO_STREAM,100);
-                  //delay(10000);
-                  //playVideo(VID_CURSOR,100);
+          case 5: 
                   gotoPage("main_2");
                   delay(500);
                   changeLightMode(LED_MODE_THREESINE);
@@ -139,10 +173,6 @@ void loop() {
                   delay(200);
                   break;  
           }
-        }
-
-        if(input==' ' && inputSpecialKeys==0){
-          toKeyboardMode();
         }
 
         break;

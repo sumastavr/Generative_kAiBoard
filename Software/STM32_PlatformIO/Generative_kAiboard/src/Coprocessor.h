@@ -63,6 +63,19 @@ void sendChar(char input){
     BLE.print(input);
 }
 
+#define KBDPRESSCODE        201
+#define KBDRELEASECODE      202
+
+void pressChar(char input){
+    BLE.write(KBDPRESSCODE);
+    BLE.print(input);
+}
+
+void releaseChar(char input){
+    BLE.write(KBDRELEASECODE);
+    BLE.print(input);
+}
+
 void streamGPTResults(String answer){
     String bufferDisplay=answer;
     appendTextLCD(OUTPUT_GPT,"   ");
