@@ -10,6 +10,9 @@
 #define LEDSLEEPMODEHEADER  215
 #define LEDSLEEPMODEFOOTER  216
 
+#define KBDPRESSCODE        201
+#define KBDRELEASECODE      202
+
 SET_LOOP_TASK_STACK_SIZE(16*1024);
 
 // RGB Shades data output to LEDs is on pin 5
@@ -272,6 +275,18 @@ void loop() {
           }
           Serial2.flush();
         }
+      }else if(in==KBDPRESSCODE){
+        delay(5);
+        byte key=Serial2.read();
+        bleKeyboard.press(char(key));
+        Serial.print("PRESS: "); 
+        Serial.println(char(key));
+      }else if(in==KBDRELEASECODE){
+        delay(5);
+        byte key=Serial2.read();
+        bleKeyboard.release(char(key));
+        Serial.print("RELEASE: "); 
+        Serial.println(char(key));
       }else{
         Serial.write(in);
         bleKeyboard.print(char(in));
