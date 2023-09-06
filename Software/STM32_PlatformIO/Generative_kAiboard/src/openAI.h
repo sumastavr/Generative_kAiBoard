@@ -112,6 +112,7 @@ String openAI_chat(String message) {
             state=true;
           }else if (Feedback.indexOf("Bad Request")!=-1){
             sendTextLCD(STATUS_BAR,"Bad Request Please retry");
+            client.stop();
             replied=true;
           }
             
@@ -148,6 +149,7 @@ String openAI_chat(String message) {
             sendTextLCD(STATUS_BAR,"press ESCape to stream");
             sendTextLCD(OUTPUT_GPT,toDisplay);
             hideObjectLCD(GPT_BAR_PARA);
+            buzzMotor(1,1000);
             replied=true;
             break;
           }    
@@ -162,6 +164,145 @@ String openAI_chat(String message) {
         return getResponse;
       }
 
+    }
+
+    Serial.println(Feedback);
+    return "error";
+
+  }else{
+    
+    sendTextLCD(STATUS_BAR,"Can't connect to openai");
+    return "Connection failed";  
+  }
+}
+
+String openAI_chat_Stream(String message) { 
+
+  message.replace("\"","'");
+  String user_content = "{\"role\": \"user\", \"content\":\""+ message+"\"}";
+  historical_messages += ", "+user_content;
+  String temperature = "\"temperature\":"+ String(0.8);
+  String maxToken = "\"max_tokens\":"+ String(800);
+  String frequency = "\"frequency_penalty\":"+ String(0.5);
+  String user = "\"user\":\"Sumasta Generative Kaiboard\"";
+  String stream="\"stream\": true";
+
+  String request = "{\"model\":\""+model+"\",\"messages\":[" + historical_messages + "]," + temperature +","+ maxToken + ","+ frequency + ","+ user + "," +stream + "}";
+
+  //Serial.println(request);
+  //Serial.println(client.connected());
+
+  if (client.connect(server, 443)) {
+    
+    IWatchdog.reload();
+    sendTextLCD(STATUS_BAR,"GENERATING ANSWERS");
+    clearTextLCD(OUTPUT_GPT);
+
+    client.println("POST /v1/chat/completions HTTP/1.1");
+    client.println("Connection: close"); 
+    client.println("Host: api.openai.com");
+    client.println("Authorization: Bearer " + openaiKey);
+    client.println("Content-Type: application/json; charset=utf-8");
+    client.println("Content-Length: " + String(request.length()));
+    client.println();
+
+    for (int i = 0; i < request.length(); i += 1024) {
+      client.print(request.substring(i, i+1024));
+    }
+    
+    String getResponse="";
+    String Feedback="";
+    bool state = false;
+    int waitTime = 30000;   // timeout 30 seconds
+    long startTime = millis();
+    bool replied=false;
+
+    showObjectLCD(GPT_BAR_PARA);
+    byte progress=0;
+    long counterProgress=millis();
+
+    int chunk=0;
+    String completeAppendedReply="";
+
+    stopCurrentVideo();
+    hideObjectLCD(VID_OUTRO);
+
+    while ((startTime + waitTime) > millis() && !replied) {
+
+      if(millis()-counterProgress>300){
+        setProgressBar(GPT_BAR,++progress);
+        counterProgress=millis();
+      }
+    
+      while (client.available()>0 && !replied) {
+
+          if(millis()-counterProgress>300){
+            setProgressBar(GPT_BAR,++progress);
+            counterProgress=millis();
+          }
+
+          char c = client.read();
+          //Serial.print(c);
+          
+          if (state==true){ 
+            getResponse += c;
+          }
+
+          if (c == '\n'){
+            Feedback = "";
+          }else if (c != '\r'){
+            Feedback += c;
+          }
+
+          if (Feedback.indexOf("\",\"content\":\"")!=-1 || Feedback.indexOf("\"content\": \"" )!=-1 || Feedback.indexOf("{\"content\":\"" )!=-1 || Feedback.indexOf("{\"content\": \"" )!=-1){
+            //Serial.println("State True ");
+            state=true;
+          }else if (Feedback.indexOf("Bad Request")!=-1){
+            sendTextLCD(STATUS_BAR,"Bad Request Please retry");
+            client.stop();
+            replied=true;
+          }else if(Feedback.indexOf("[DONE]")!=-1){
+            sendTextLCD(STATUS_BAR,"press ESCape to stream");
+            hideObjectLCD(GPT_BAR_PARA);
+            replied=true;
+            client.stop();
+            String assistant_content = "{\"role\": \"assistant\", \"content\":\""+ completeAppendedReply+"\"}";
+            historical_messages += ", "+assistant_content;
+            Serial.print("Hist Message Length: ");
+            Serial.println(historical_messages.length());
+            Serial.print("Free Ram: ");
+            Serial.println(getFreeRamString());
+            buzzMotor(1,1000);
+            return completeAppendedReply;
+            break;
+          }
+            
+          if (getResponse.indexOf("\"},")!=-1 && state==true) {
+
+            chunk++;
+            state=false;
+            getResponse = getResponse.substring(0,getResponse.length()-3);
+
+            Serial.print("Chunk: ");
+            Serial.print(chunk);
+            Serial.print(" ");
+            Serial.println(getResponse);
+
+            String GPTspacer="";
+            GPTspacer+=(char)0x5C;
+            GPTspacer+=(char)0x6E;
+            String NXTspacer="";
+            NXTspacer+=(char)0x0D;
+            NXTspacer+=(char)0x0A;
+            String toDisplay=getResponse;
+            toDisplay.replace(GPTspacer,NXTspacer);
+
+            appendTextLCD(OUTPUT_GPT,toDisplay);
+            completeAppendedReply+=getResponse;
+            getResponse="";
+            Feedback="";
+          } 
+      }
     }
 
     Serial.println(Feedback);

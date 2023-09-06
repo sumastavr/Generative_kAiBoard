@@ -100,7 +100,7 @@ void changeLightMode(byte mode){
     String payload="";
     payload+=(char)LEDCHANGEHEADER;
     payload+=String(mode);
-    payload+=(char)LEDCHANGEFOOTER;
+    //payload+=(char)LEDCHANGEFOOTER;
 
     BLE.print(payload);
 
@@ -110,6 +110,6 @@ void sleepModeLight(byte state){
     String payload="";
     payload+=(char)LEDSLEEPMODEHEADER;
     payload+=String(state);
-    payload+=(char)LEDSLEEPMODEFOOTER;
+    //payload+=(char)LEDSLEEPMODEFOOTER;
     BLE.print(payload);
 }

@@ -51,8 +51,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define STATE_BASIC_KEYBOARD  0
 #define STATE_CHAT_GPT_QUERY  1
 #define STATE_CHAT_GPT_STREAM 2
-#define STATE_DEVICE_LOCKED   99
-#define STATE_DEVICE_SLEEP    88
+#define STATE_DEVICE_LOCKED   3
+#define STATE_DEVICE_SLEEP    4
 
 byte STATE_TRACKER = 0;
 
@@ -66,7 +66,7 @@ void setup() {
   initLCDSerial();
   initBLE();
   initEEPROM();
-  initEthernetDHCP(2000);
+  initEthernetDHCP(4000);
   initGPIO();
   initTypeCounter();
   initVariables();
@@ -74,6 +74,9 @@ void setup() {
   Serial.print("Current State: ");
   Serial.println(STATE_TRACKER);
   sendNTPpacket(TIME_SERVER);
+
+  display_mallinfo();
+  
 }
 
 
@@ -150,7 +153,8 @@ void loop() {
             sendTextLCD(STATUS_BAR, "Disengage the gpt interlock");
           }else if(input==EN){
             buzzMotor(2,250);
-            openAI_chat(getTextLCD(INPUT_KBD,0));
+            //openAI_chat(getTextLCD(INPUT_KBD,0));
+            openAI_chat_Stream(getTextLCD(INPUT_KBD,0));
           }else{
             if(isPrintableKey(input)){      
               if(currentKeyState){    

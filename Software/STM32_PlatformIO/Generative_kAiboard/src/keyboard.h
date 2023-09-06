@@ -49,6 +49,9 @@ uint32_t clickCounter=0;
 long timerSaveKeycount=millis();
 long intervalSaveKeycount=1800000;
 
+bool currentKeyState=false;
+bool currentSpKeyState=false;
+
 void initVariables(){
   for (int i=0;i<16;i++){
     for (int x=0;x<4;x++){
@@ -80,9 +83,6 @@ void displayTypeCounter(uint32_t clickCount){
 
 }
 
-bool currentKeyState=false;
-bool currentSpKeyState=false;
-
 char scanKeyboard(){
 
   // Scan through all possible MUX combination from S0 to S3
@@ -94,42 +94,36 @@ char scanKeyboard(){
     }
 
     for (uint8_t z=0;z<sizeof(MUX_READ_PINS);z++){
+
       bool pinState=digitalRead(MUX_READ_PINS[z]);
       keyStates[i][z]=pinState;
-      
-      //if (pinState==LOW){
-        
-        currentKeyState=false;
+      currentKeyState=false;
+
         if(pinState!=prevKeyStates[i][z]){
           prevKeyStates[i][z]=keyStates[i][z];
-          displayTypeCounter(++clickCounter);
 
           if(pinState){
             Serial.print("R: ");
             Serial.println(caseMux[i][z]);
             currentKeyState=false;
-            //delay(10);
             prevKeyStates[i][z]=keyStates[i][z];
             return caseMux[i][z];
           }else{
+
             //Serial.print(" STATE: ");
             //Serial.print(i);
             //Serial.print(" MUX: ");
             //Serial.println(z);
-            //delay(500);
+            //delay(200);
+
             Serial.print("P: ");
             Serial.println(caseMux[i][z]);
             currentKeyState=true;
-            //delay(10);
             prevKeyStates[i][z]=keyStates[i][z];
+            displayTypeCounter(++clickCounter);
             return caseMux[i][z];
-          }
-                    
+          }      
         }
-
-        //Serial.print(caseMux[i][z]);
-        //Serial.print(caseMux[i][z]);
-      //}
 
       prevKeyStates[i][z]=keyStates[i][z];
     }
@@ -152,7 +146,7 @@ int scanSpecialKeys(){
     if (specialKeys[i]!=prevSpecialKeys[i]){
       if(specialKeys[i]==LOW){
         currentSpKeyState=true;
-        //Serial.println(i);
+        displayTypeCounter(++clickCounter);
       }else{
         currentSpKeyState=false;
       }
@@ -177,18 +171,6 @@ bool isPrintableKey(char in){
     }
   }
   return printable;
-}
-
-void printKeys(){
-  for (uint8_t i=0;i<scanIteration;i++){
-    for (uint8_t x=0; x<4; x++){
-      if (keyStates[i][x]==LOW){       
-        //if (isPrintableKey(i,x)){
-          //Serial.print(caseMux[i][x]);
-        //}
-      }
-    }
-  }
 }
 
 void printDebugKeyboard(){

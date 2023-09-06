@@ -53,6 +53,8 @@ void toKeyboardMode(){
   STATE_TRACKER=STATE_BASIC_KEYBOARD;
   safeCurrentState(STATE_TRACKER);
   sendTextLCD(STATUS_BAR,"keyboard mode");
+  stopCurrentVideo();
+  hideObjectLCD(VID_OUTRO);
   changeLightMode(LED_MODE_PLASMA);
   clearTextLCD(INPUT_KBD);
   clearTextLCD(OUTPUT_GPT);
@@ -75,6 +77,7 @@ void toChatGPTMode(){
   hideObjectLCD(CLOCK_PARA);
   hideObjectLCD(DATE_PARA);
   hideObjectLCD(SEC_BAR_PARA);
+  playVideo(VID_OUTRO,0);
   buzzMotor(2,250);
 }
 
