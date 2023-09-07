@@ -13,6 +13,9 @@
 #define KBDPRESSCODE        201
 #define KBDRELEASECODE      202
 
+#define STREAMSTARTCODE     221
+#define STREAMDONECODE      222
+
 SET_LOOP_TASK_STACK_SIZE(16*1024);
 
 // RGB Shades data output to LEDs is on pin 5
@@ -57,7 +60,7 @@ functionList effectList[] = { threeDee,
 const byte numEffects = (sizeof(effectList)/sizeof(effectList[0]))-1;
 //const byte numEffects=4;
 
-BleKeyboard bleKeyboard;
+BleKeyboard bleKeyboard("Generative kAiboard","Sumasta-Tech",100);
 
 #define PIN_JYS_L_Y   32
 #define PIN_JYS_L_X   15
@@ -99,7 +102,6 @@ void setup() {
   FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds, LAST_VISIBLE_LED + 1);
 
   Serial.println(ESP.getFreeHeap());
-  bleKeyboard.setName("Generative kAiboard");
   bleKeyboard.begin();
 
 }
@@ -115,6 +117,7 @@ int lastMappedBrightness=0;
 int currentMappedBrightness=0;
 
 bool sleepMode=false;
+bool stramingResult=false;
 
 void checkBrightness(){
 
@@ -188,6 +191,34 @@ void checkLeftJoystick(){
   
 }
 
+long readRightJoystickTimer=millis();
+int readRightJoystickInterval=100;
+
+void checkRightJoystick(){
+  int xValue=analogRead(PIN_JYS_R_X);
+  int yValue=analogRead(PIN_JYS_R_Y);
+  bool button=digitalRead(PIN_JYS_R_BUT);
+
+  if(xValue>thresholdHigh){
+    bleKeyboard.write(KEY_DOWN_ARROW);
+  }else if(xValue<thresholdLow){
+    bleKeyboard.write(KEY_UP_ARROW);
+  }
+
+  if(yValue>thresholdHigh){
+    bleKeyboard.write(KEY_RIGHT_ARROW);
+  }else if(yValue<thresholdLow){
+    bleKeyboard.write(KEY_LEFT_ARROW);
+  }
+
+  /*
+  if(button==LOW){
+    bleKeyboard.write(KEY_MEDIA_PLAY_PAUSE);
+    delay(500);
+  }
+  */
+  
+}
 
 
 void loop() {
@@ -212,8 +243,11 @@ void loop() {
     readLeftJoystickTimer=millis();
   }
 
+  if(millis()-readRightJoystickTimer>readRightJoystickInterval){
+    checkRightJoystick();
+    readRightJoystickTimer=millis();
+  }
 
-  
   currentMillis = millis(); // save the current timer value
 
   // switch to a new effect every cycleTime milliseconds
@@ -241,10 +275,11 @@ void loop() {
 
   if(!sleepMode){
     FastLED.show(); // send the contents of the led memory to the LEDs
-    FastLED.delay(5);
+    FastLED.delay(10);
   }
 
   if(bleKeyboard.isConnected()) {
+
     while(Serial2.available()>0){
       byte in=Serial2.read();
       if(in==LEDCHANGEHEADER){
@@ -287,13 +322,32 @@ void loop() {
         bleKeyboard.release(char(key));
         Serial.print("RELEASE: "); 
         Serial.println(char(key));
+      }else if(in==STREAMSTARTCODE){
+        Serial.flush();
+        delay(200);
+        while(Serial.available()>0)Serial.read();
+        delay(300);        
+        stramingResult=true;
+      }else if(in==STREAMDONECODE){
+        delay(5);
+        Serial.flush();
+        stramingResult=false;
       }else{
         Serial.write(in);
-        bleKeyboard.print(char(in));
+        //if(in<128){
+        //  bleKeyboard.print(char(in));
+        //}
         //bleKeyboard.write(in);
       }
-      
     }
+
+    while(Serial.available()>0 && stramingResult){
+      byte in=Serial.read();
+      if(in<128){
+          bleKeyboard.write(in);
+      }
+    }
+
   }
 }
 
