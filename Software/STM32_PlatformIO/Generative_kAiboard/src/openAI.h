@@ -189,14 +189,12 @@ String openAI_chat_Stream(String message) {
 
   String request = "{\"model\":\""+model+"\",\"messages\":[" + historical_messages + "]," + temperature +","+ maxToken + ","+ frequency + ","+ user + "," +stream + "}";
 
-  //Serial.println(request);
-  //Serial.println(client.connected());
-
   if (client.connect(server, 443)) {
     
     IWatchdog.reload();
     sendTextLCD(STATUS_BAR,"GENERATING ANSWERS");
     clearTextLCD(OUTPUT_GPT);
+    changeLightMode(LED_MODE_COLORFILL);
 
     client.println("POST /v1/chat/completions HTTP/1.1");
     client.println("Connection: close"); 
@@ -255,12 +253,13 @@ String openAI_chat_Stream(String message) {
           }
 
           if (Feedback.indexOf("\",\"content\":\"")!=-1 || Feedback.indexOf("\"content\": \"" )!=-1 || Feedback.indexOf("{\"content\":\"" )!=-1 || Feedback.indexOf("{\"content\": \"" )!=-1){
-            //Serial.println("State True ");
             state=true;
           }else if (Feedback.indexOf("Bad Request")!=-1){
             sendTextLCD(STATUS_BAR,"Bad Request Please retry");
             client.stop();
+            changeLightMode(LED_MODE_SIDERAIN);
             replied=true;
+            historical_messages="";
           }else if(Feedback.indexOf("[DONE]")!=-1){
             sendTextLCD(STATUS_BAR,"press ESCape to stream");
             hideObjectLCD(GPT_BAR_PARA);
@@ -272,7 +271,13 @@ String openAI_chat_Stream(String message) {
             Serial.println(historical_messages.length());
             Serial.print("Free Ram: ");
             Serial.println(getFreeRamString());
-            buzzMotor(1,1000);
+            String systemState="FREE-RAM:"+getFreeRamString()+" b";
+            systemState+="  GPTBUFFER:";
+            systemState+=String(historical_messages.length())+" b";
+            systemState+="  UPTIME:"+String(millis())+" ms";
+            sendTextLCD(SYSTEM_STATE,systemState);
+            buzzMotor(2,250);
+            changeLightMode(LED_MODE_SIDERAIN);
             return completeAppendedReply;
             break;
           }
@@ -301,6 +306,7 @@ String openAI_chat_Stream(String message) {
             completeAppendedReply+=getResponse;
             getResponse="";
             Feedback="";
+
           } 
       }
     }

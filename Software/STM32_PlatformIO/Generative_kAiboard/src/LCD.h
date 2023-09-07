@@ -39,6 +39,7 @@ HardwareSerial LCD(USART6);
 #define GPT_ROLE        "select0.txt"
 #define STATUS_BAR      "t8.txt"
 #define INTERNET_STATE  "t2.txt"
+#define SYSTEM_STATE    "t9.txt"
 
 #define SL_RANDOM       "h2.val"
 #define SL_CREATIVE     "h1.val"
@@ -67,7 +68,7 @@ HardwareSerial LCD(USART6);
 
 //#define DEBUG_LCD
 
-#define TIMEOUT_WAIT_LCD    100
+#define TIMEOUT_WAIT_LCD    500
 
 String vidCurrentlyPlaying=VID_INTRO;
 
@@ -134,7 +135,7 @@ String expectLCDStream(int timeout){
     long counter=millis();
     String reply;
     while(timeout+counter>millis()){
-        if (LCD.available()){
+        while (LCD.available()){
             reply+=(char)LCD.read();
         }
     }

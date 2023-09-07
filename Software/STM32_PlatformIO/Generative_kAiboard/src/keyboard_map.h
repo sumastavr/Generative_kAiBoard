@@ -50,6 +50,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CS  0xC1  // Capslock
 #define PU  0xD3  // page up
 #define PD  0xD6  // page down
+#define F2  0xC3
 
 #define SP_KEY_A  2
 #define SP_KEY_B  1
@@ -58,17 +59,17 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define SP_KEY_E  4
 #define SP_KEY_F  3
 
-const char nonPrintable[]={EN,AS,SH,DL,VT,ES,CT,SP,AL};
-const int nonPrintableTotal=9;
+const char nonPrintable[]={EN,SH,DL,VT,ES,CT,SP,AL,PS,CS,PU,PD,F2};
+const int nonPrintableTotal=12;
 
 const char caseMux[][4]  = {{'3'  ,'b'  ,'0'  , SH  }, // case 0
                             { SP  ,'g'  , PD  , EN  }, // case 1
                             {'z'  ,'t'  ,','  ,']'  }, // case 2
                             {'a'  ,'6'  ,'k'  , BS  }, // case 3
-                            {'q'  ,'v'  ,'i'  , PS  }, // case 4
+                            {'q'  ,'v'  ,'i'  , F2  }, // case 4
                             {'2'  ,'f'  ,'9'  , SQ  }, // case 5
                             { CT  ,'r'  , DL  ,'['  }, // case 6
-                            {'|'  ,'5'  ,'m'  ,'+'  }, // case 7
+                            {'|'  ,'5'  ,'m'  ,'='  }, // case 7
                             { AS  ,'c'  ,'j'  ,'/'  }, // case 8
                             { BL  ,'d'  ,'u'  ,';'  }, // case 9
                             {'1'  ,'e'  ,'8'  ,'p'  }, // case 10

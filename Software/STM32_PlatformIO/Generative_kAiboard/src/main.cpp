@@ -146,7 +146,6 @@ void loop() {
             delTextLCD(INPUT_KBD,1);
             delay(100);
           }else if(input==ES){ // Escape key
-            playVideo(VID_DISENGAGE,100);
             STATE_TRACKER=2;
             safeCurrentState(STATE_TRACKER);
             buzzMotor(2,250);
@@ -159,7 +158,7 @@ void loop() {
             if(isPrintableKey(input)){      
               if(currentKeyState){    
                 appendTextLCD(INPUT_KBD,String(input));
-                delay(50);
+                delay(100);
               }
             }
           }
@@ -187,6 +186,7 @@ void loop() {
           changeLightMode(LED_MODE_SLANTBAR);
           buzzMotor(5,100);
           streamGPTResults(getTextLCD(OUTPUT_GPT,0));
+          delay(2000);
           STATE_TRACKER=STATE_CHAT_GPT_QUERY;
           changeLightMode(LED_MODE_SIDERAIN);
           safeCurrentState(STATE_TRACKER);

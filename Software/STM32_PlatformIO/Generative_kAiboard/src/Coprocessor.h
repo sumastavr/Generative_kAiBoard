@@ -51,6 +51,9 @@ HardwareSerial BLE(USART2);
 #define LED_MODE_COLORFILL   7
 #define LED_MODE_SIDERAIN    8
 
+#define STREAMSTARTCODE     221
+#define STREAMDONECODE      222
+
 void initBLE(){
     
   BLE.setTx(BLE_TX_PIN);
@@ -78,21 +81,19 @@ void releaseChar(char input){
 
 void streamGPTResults(String answer){
     String bufferDisplay=answer;
-    appendTextLCD(OUTPUT_GPT,"   ");
-    delay(500);
+    BLE.write(STREAMSTARTCODE);
+    delay(1000);
     for(int i=0;i<answer.length();i++){
         IWatchdog.reload();
-        
-        //if(i%5==0){
-            delTextLCD(OUTPUT_GPT,1);
-        //}
-        //bufferDisplay=bufferDisplay.substring(1);
-        //sendTextLCD(OUTPUT_GPT,bufferDisplay);
+        delTextLCD(OUTPUT_GPT,1);
 
-        BLE.print(answer.charAt(i));
-        //byte randomDelay=DELAY_STREAM+random(DELAY_STREAM_VAR);
-        delay(30);
+        //BLE.print(answer.charAt(i));
+        Serial.print(answer.charAt(i));
+        
+        delay(25);
     }
+    BLE.write(STREAMDONECODE);
+    delay(500);
 }
 
 void changeLightMode(byte mode){

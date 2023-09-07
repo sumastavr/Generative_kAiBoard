@@ -172,3 +172,4 @@ String getFreeRamString(){
   struct mallinfo mi = mallinfo();
   return String((((stack_ptr < minSP) ? stack_ptr : minSP) - heapend + mi.fordblks));
 }
+
