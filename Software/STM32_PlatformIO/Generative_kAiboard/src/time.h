@@ -57,7 +57,7 @@ byte packetBuffer[NTP_PACKET_SIZE];
 EthernetUDP Udp;
 
 // send an NTP request to the time server at the given address
-void sendNTPpacket(const char * address) {
+void initInternetClock(const char * address) {
 
   Udp.begin(localPort);
 
@@ -139,6 +139,12 @@ String getNameofDayString(){
 String getCompleteDateString(){
     String dateComplete=getNameofDayString();
     dateComplete+="  "+String(day())+"/"+String(month())+"/"+String(year());
+    return dateComplete;
+}
+
+String getCompleteDateStringUS(){
+    String dateComplete=getNameofDayString();
+    dateComplete+="  "+String(month())+"/"+String(day())+"/"+String(year());
     return dateComplete;
 }
 

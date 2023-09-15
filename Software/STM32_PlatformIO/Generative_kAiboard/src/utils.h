@@ -118,6 +118,11 @@ void checkWatchDog(){
   if (IWatchdog.isReset(true)) Serial.println("Watchdog Triggered!");
 }
 
+void initWatchDog(byte sec){
+  if (sec>30)sec=30;
+  IWatchdog.begin(sec*1000000);
+}
+
 void display_mallinfo(void){
 
   char *heapend = (char*)sbrk(0);

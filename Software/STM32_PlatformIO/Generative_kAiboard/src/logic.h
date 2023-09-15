@@ -93,3 +93,36 @@ void monitorClock(){
     clockRefreshCounter=millis();
   }
 }
+
+void streamingProcess(){
+  if(digitalRead(PIN_GPT_STATUS)==LOW){
+    changeLightMode(LED_MODE_SLANTBAR);
+    buzzMotor(5,100);
+    streamGPTResults(getTextLCD(OUTPUT_GPT,0));
+    delay(2000);
+    STATE_TRACKER=STATE_CHAT_GPT_QUERY;
+    changeLightMode(LED_MODE_SIDERAIN);
+    safeCurrentState(STATE_TRACKER);
+    sendTextLCD(STATUS_BAR,"results sent");
+    buzzMotor(5,100);
+  }
+}
+
+void checkNFCTag(){
+  if(scanNFC()==true){  
+    playVideo(VID_UNLOCKED,100);
+    STATE_TRACKER=STATE_BASIC_KEYBOARD;
+    safeCurrentState(STATE_TRACKER);
+    sendTextLCD(STATUS_BAR,"keyboard mode");
+    changeLightMode(LED_MODE_PLASMA);
+    clearTextLCD(INPUT_KBD);
+    clearTextLCD(OUTPUT_GPT);
+    buzzMotor(1,500);
+  }
+}
+
+void monitorKBDLock(char in, char inSp){
+  if(in!=NULL || inSp<6){
+    playVideo(VID_LOCK,100);
+  }
+}

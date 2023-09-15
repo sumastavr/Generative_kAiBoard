@@ -173,6 +173,66 @@ bool isPrintableKey(char in){
   return printable;
 }
 
+void processKey(char in){
+  if(in!=NULL){
+    if(currentKeyState){
+      pressChar(in);
+    }else{
+      releaseChar(in);
+    }
+    delay(20);
+  }
+}
+
+void processKeyGPT(char in){
+  if(isPrintableKey(in)){      
+    if(currentKeyState){    
+      appendTextLCD(INPUT_KBD,String(in));
+      delay(100);
+    }
+  }
+}
+
+void processSpKeyGPT(char inSp){
+  if(inSp<6){
+    switch(inSp){
+      case 5: 
+        changeLightMode(LED_MODE_THREESINE);
+        playVideo(VID_OUTRO,100);
+        break;
+      case 3: clearTextLCD(INPUT_KBD);
+        delay(200);
+        break;  
+      }
+    }
+}
+
+void processSpKeyKBD(char inSp){
+  switch(inSp){
+    case SP_KEY_F:
+      if(currentSpKeyState){
+        pressChar(CT);
+      }else{
+        releaseChar(CT);
+      }
+      break; 
+    case SP_KEY_E:
+      if(currentSpKeyState){
+        pressChar(AL);
+      }else{
+        releaseChar(AL);
+      }
+      break;
+    case SP_KEY_D:
+      if(currentSpKeyState){
+        pressChar(SP);
+      }else{
+        releaseChar(SP);
+      }
+      break;     
+  }
+}
+
 void printDebugKeyboard(){
     
   Serial.println(digitalRead(MUX_READ_PINS[0]));

@@ -288,10 +288,12 @@ String openAI_chat_Stream(String message) {
             state=false;
             getResponse = getResponse.substring(0,getResponse.length()-3);
 
+            /*
             Serial.print("Chunk: ");
             Serial.print(chunk);
             Serial.print(" ");
             Serial.println(getResponse);
+            */
 
             String GPTspacer="";
             GPTspacer+=(char)0x5C;
@@ -320,3 +322,4 @@ String openAI_chat_Stream(String message) {
     return "Connection failed";  
   }
 }
+

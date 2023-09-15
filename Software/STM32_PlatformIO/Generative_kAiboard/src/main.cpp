@@ -36,6 +36,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <Wire.h>
 #include <SPI.h>
 
+#include "time.h"
 #include "GPIO.h"
 #include "LCD.h"
 #include "EEPROM.h"
@@ -44,9 +45,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "NFC.h"
 #include "ToF.h"
 #include "ethernetSSL.h"
+#include "prompt.h"
 #include "openAI.h"
 #include "keyboard.h"
-#include "time.h"
+
+byte STATE_TRACKER = 0;
+const String stateName[] = {"Keyboard Mode", "Generative Mode", "Streaming Mode", "Keyboard is Locked", "Sleep mode"};
 
 #define STATE_BASIC_KEYBOARD  0
 #define STATE_CHAT_GPT_QUERY  1
@@ -54,15 +58,14 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define STATE_DEVICE_LOCKED   3
 #define STATE_DEVICE_SLEEP    4
 
-byte STATE_TRACKER = 0;
-
 #include "logic.h"
 
 void setup() {
 
-  Serial.begin(115200); 
-  IWatchdog.begin(30000000);
+  Serial.begin(115200);
   checkWatchDog();
+  initWatchDog(30);
+
   initLCDSerial();
   initBLE();
   initEEPROM();
@@ -70,10 +73,10 @@ void setup() {
   initGPIO();
   initTypeCounter();
   initVariables();
+
   STATE_TRACKER=readCurrentState();
-  Serial.print("Current State: ");
-  Serial.println(STATE_TRACKER);
-  sendNTPpacket(TIME_SERVER);
+  initStatusBarLCD(stateName[STATE_TRACKER]);
+  initInternetClock(TIME_SERVER);
 
   display_mallinfo();
   
@@ -98,83 +101,32 @@ void loop() {
 
     case STATE_BASIC_KEYBOARD:
 
-          monitorClock();
-          
           if(inputSpecialKeys==SP_KEY_C && currentSpKeyState) toChatGPTMode();
-        
-          if(input!=NULL){
-            if(currentKeyState){
-              pressChar(input);
-            }else{
-              releaseChar(input);
-            }
-            delay(20);
-          }
-
-          switch(inputSpecialKeys){
-            case SP_KEY_F:
-              if(currentSpKeyState){
-                pressChar(CT);
-              }else{
-                releaseChar(CT);
-              }
-              break; 
-            case SP_KEY_E:
-              if(currentSpKeyState){
-                pressChar(AL);
-              }else{
-                releaseChar(AL);
-              }
-              break;
-            case SP_KEY_D:
-              if(currentSpKeyState){
-                pressChar(SP);
-              }else{
-                releaseChar(SP);
-              }
-              break;     
-          }
-
+          processKey(input);
+          processSpKeyKBD(inputSpecialKeys);
+          monitorClock();
           break;
 
     case STATE_CHAT_GPT_QUERY:
 
         if(inputSpecialKeys==SP_KEY_C && currentSpKeyState) toKeyboardMode();
+        processSpKeyGPT(inputSpecialKeys);
 
         if(currentKeyState){
-          if(input==BS){
+          if(input==BS){            // Backspace Key
             delTextLCD(INPUT_KBD,1);
             delay(100);
-          }else if(input==ES){ // Escape key
+          }else if(input==ES){      // Escape key
             STATE_TRACKER=2;
             safeCurrentState(STATE_TRACKER);
             buzzMotor(2,250);
             sendTextLCD(STATUS_BAR, "Disengage the gpt interlock");
-          }else if(input==EN){
+          }else if(input==EN){      // Enter Key
             buzzMotor(2,250);
-            //openAI_chat(getTextLCD(INPUT_KBD,0));
-            openAI_chat_Stream(getTextLCD(INPUT_KBD,0));
+            String processedPrompt=processPromptArray(getTextLCD(INPUT_KBD,0));
+            openAI_chat_Stream(processedPrompt);
           }else{
-            if(isPrintableKey(input)){      
-              if(currentKeyState){    
-                appendTextLCD(INPUT_KBD,String(input));
-                delay(100);
-              }
-            }
-          }
-        }
-
-        if(inputSpecialKeys<6){
-          switch(inputSpecialKeys){
-          case 5: 
-                  gotoPage("main_2");
-                  delay(500);
-                  changeLightMode(LED_MODE_THREESINE);
-                  playVideo(VID_OUTRO,100);
-                  break;
-          case 3: clearTextLCD(INPUT_KBD);
-                  delay(200);
-                  break;  
+            processKeyGPT(input);
           }
         }
 
@@ -182,39 +134,18 @@ void loop() {
     
     case STATE_CHAT_GPT_STREAM:
 
-        if(digitalRead(PIN_GPT_STATUS)==LOW){
-          changeLightMode(LED_MODE_SLANTBAR);
-          buzzMotor(5,100);
-          streamGPTResults(getTextLCD(OUTPUT_GPT,0));
-          delay(2000);
-          STATE_TRACKER=STATE_CHAT_GPT_QUERY;
-          changeLightMode(LED_MODE_SIDERAIN);
-          safeCurrentState(STATE_TRACKER);
-          sendTextLCD(STATUS_BAR,"results sent");
-          buzzMotor(5,100);
-        }
-
+        streamingProcess();
         break;
 
     case STATE_DEVICE_LOCKED:
+        
         monitorClock();
+        monitorKBDLock(input,inputSpecialKeys);
+        
         if (!NFCInitialized){
           initNFC();
         }else{
-          if(scanNFC()==true){  
-            playVideo(VID_UNLOCKED,100);
-            STATE_TRACKER=STATE_BASIC_KEYBOARD;
-            safeCurrentState(STATE_TRACKER);
-            sendTextLCD(STATUS_BAR,"keyboard mode");
-            changeLightMode(LED_MODE_PLASMA);
-            clearTextLCD(INPUT_KBD);
-            clearTextLCD(OUTPUT_GPT);
-            buzzMotor(1,500);
-          }
-        }
-
-        if(input!=NULL || inputSpecialKeys<6){
-          playVideo(VID_LOCK,100);
+          checkNFCTag();
         }
 
         break;

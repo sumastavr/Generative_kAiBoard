@@ -78,6 +78,10 @@ void initLCDSerial(){
     LCD.begin(115200);
 }
 
+void initStatusBarLCD(String state){
+
+}
+
 void sendTermination(){
     LCD.write(0xFF);
     LCD.write(0xFF);
