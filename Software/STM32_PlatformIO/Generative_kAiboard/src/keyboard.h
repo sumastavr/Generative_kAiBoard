@@ -200,7 +200,9 @@ void processSpKeyGPT(char inSp){
         changeLightMode(LED_MODE_THREESINE);
         playVideo(VID_OUTRO,100);
         break;
-      case 3: clearTextLCD(INPUT_KBD);
+      case 3: 
+        clearTextLCD(INPUT_KBD);
+        stopCurrentVideo();
         delay(200);
         break;  
       }

@@ -164,13 +164,14 @@ String expectLCDStream(int timeout){
     return reply;
 }
 
-int expectLCDStreamInt(int timeout){
+byte expectLCDStreamInt(int timeout){
 
     long counter=millis();
-    int reply;
+    byte reply;
     while(timeout+counter>millis()){
-        if (LCD.available()){
+        if (LCD.available()>0){
             reply=LCD.read();
+            //Serial.println(reply);
         }
     }
     return reply;
@@ -184,6 +185,15 @@ String getTextLCD(String target, int charCount){
     sendPayload(payload);
     sendTermination();
     return expectLCDStream(TIMEOUT_WAIT_LCD);
+}
+
+void changeAlignmentText(String target, int alignment){
+    target.replace(".txt",".xcen");
+    String payload=target;
+    payload+="=";
+    payload+=String(alignment);
+    sendPayload(payload);
+    sendTermination();
 }
 
 void makeSelectionLCD(String target,int index){

@@ -58,6 +58,15 @@ const String stateName[] = {"Keyboard Mode", "Generative Mode", "Streaming Mode"
 #define STATE_DEVICE_LOCKED   3
 #define STATE_DEVICE_SLEEP    4
 
+byte STATE_GENERATIVE_TRACKER = 0;
+const String generativeStateName[] = {"Informative Mode", "Creative Mode", "Suggestive Mode", "Illustrative Mode", "Educative Mode"};
+
+#define STATE_GENERATIVE_MODE_INFORMATIVE   0
+#define STATE_GENERATIVE_MODE_CREATIVE      1
+#define STATE_GENERATIVE_MODE_SUGGESTIVE    2
+#define STATE_GENERATIVE_MODE_ILLUSTRATIVE  3
+#define STATE_GENERATIVE_MODE_EDUCATIVE     4
+
 #include "logic.h"
 
 void setup() {
@@ -109,25 +118,31 @@ void loop() {
 
     case STATE_CHAT_GPT_QUERY:
 
+        monitorGenerativeModeSelection();
+
         if(inputSpecialKeys==SP_KEY_C && currentSpKeyState) toKeyboardMode();
         processSpKeyGPT(inputSpecialKeys);
 
-        if(currentKeyState){
-          if(input==BS){            // Backspace Key
-            delTextLCD(INPUT_KBD,1);
-            delay(100);
-          }else if(input==ES){      // Escape key
-            STATE_TRACKER=2;
-            safeCurrentState(STATE_TRACKER);
-            buzzMotor(2,250);
-            sendTextLCD(STATUS_BAR, "Disengage the gpt interlock");
-          }else if(input==EN){      // Enter Key
-            buzzMotor(2,250);
-            String processedPrompt=processPromptArray(getTextLCD(INPUT_KBD,0));
-            openAI_chat_Stream(processedPrompt);
-          }else{
-            processKeyGPT(input);
+        if(STATE_GENERATIVE_TRACKER == STATE_GENERATIVE_MODE_INFORMATIVE || STATE_GENERATIVE_TRACKER == STATE_GENERATIVE_MODE_CREATIVE ||STATE_GENERATIVE_TRACKER == STATE_GENERATIVE_MODE_ILLUSTRATIVE){
+          if(currentKeyState){
+            if(input==BS){            // Backspace Key
+              delTextLCD(INPUT_KBD,1);
+              delay(100);
+            }else if(input==ES){      // Escape key
+              STATE_TRACKER=2;
+              safeCurrentState(STATE_TRACKER);
+              buzzMotor(2,250);
+              sendTextLCD(STATUS_BAR, "Disengage the gpt interlock");
+            }else if(input==EN){      // Enter Key
+              buzzMotor(2,250);
+              String processedPrompt=processPromptArray(getTextLCD(INPUT_KBD,0));
+              openAI_chat_Stream(processedPrompt);
+            }else{
+              processKeyGPT(input);
+            }
           }
+        }else if(STATE_GENERATIVE_TRACKER == STATE_GENERATIVE_MODE_SUGGESTIVE){
+
         }
 
         break;

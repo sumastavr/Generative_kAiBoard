@@ -4,20 +4,22 @@
 
 String promptClassName[]={"Myself","Work","Time","Location","Hobby","Statistics"};
 
-String promptClassKeywords[6][20]={{"i","me","myself","who"},
-                                  {"work","occupation","duty"},
-                                  {"time","clock","today","week","month","year"},
-                                  {"where","location","position","city","country","province"},
-                                  {"hobby","fun","sports","activity","weekend","party"},
-                                  {"user","state","work","control"}
+String promptClassKeywords[6][20]={{" i "," me "," myself "," who "},
+                                  {" work "," occupation "," duty "},
+                                  {" time "," clock "," today "," week "," month "," year "},
+                                  {" where "," location "," position "," city "," country "," province ", " in "},
+                                  {" hobby "," fun "," sports"," activity "," weekend "," party "},
+                                  {" user "," state "," work "," control "}
                                   };
 
-String promptClassContents[6]={ "My name is sumasta, I am the creator of Generative Kaiboard. ",
-                                "I am currently working for Signify as a lead development engineer in Trulifi business unit since march 2020. ",
-                                "Here's infomation about todays clock and date: ",
-                                "Currently i am located in Eindhoven, the netherlands. "
-                                "As a hobby I love playing soccer and badminton. "
-                                "Here some real time statistics details about the usage of this generative kaiboard",
+int promptClassKeywordsCount[6]={4,3,6,7,6,4};
+
+String promptClassContents[6]={ " My name is sumasta, I am the creator of Generative Kaiboard. ",
+                                " I am currently working for Signify as a lead development engineer in Trulifi business unit since march 2020. ",
+                                " Here's infomation about todays clock and date: ",
+                                " Currently i am located in Eindhoven, the netherlands. "
+                                " As a hobby I love playing soccer and badminton. "
+                                " Here some real time statistics details about the usage of this generative kaiboard",
                               };
 
 bool stateClassTriggered[6]={0,0,0,0,0,0};
@@ -26,24 +28,41 @@ String processPromptArray(String prompt){
 
   String copyPrompt=prompt;
   String appendedPrompt="";
-  copyPrompt+=" ";
+  bool appended=false;
+  copyPrompt=" "+copyPrompt+" ";
   copyPrompt.toLowerCase();
+
+  Serial.print("copy prompt: ");
+  Serial.println(copyPrompt);
   
   for (int i=0;i<6;i++){
     if(stateClassTriggered[i]==false){
-      for (int y=0;y<sizeof(promptClassKeywords[i]);y++){
+
+      for (int y=0;y<promptClassKeywordsCount[i];y++){
+
           if(copyPrompt.indexOf(promptClassKeywords[i][y])isDetected){
-            appendedPrompt+=promptClassContents[y];
+            appended=true;
+            appendedPrompt+=promptClassContents[i];
+            if (i==2){ // if time
+              appendedPrompt+=getCompleteDateStringUS();
+              appendedPrompt+=" at ";
+              appendedPrompt+=getClockString();
+            }
             Serial.print("Prompt Added: ");
             Serial.println(promptClassName[y]);
-            stateClassTriggered[i]=true;
+            //stateClassTriggered[i]=true;
             break;
           }
+
       }
     }
   }
 
-  prompt=appendedPrompt+prompt;
+  if (appended){
+    prompt="Here's some context: "+ appendedPrompt+" And my question is: "+ prompt;
+    Serial.print("Appended Prompt: ");
+    Serial.println(prompt);
+  }
 
   return prompt;
 

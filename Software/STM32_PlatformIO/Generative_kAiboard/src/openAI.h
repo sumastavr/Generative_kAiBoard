@@ -194,6 +194,7 @@ String openAI_chat_Stream(String message) {
     IWatchdog.reload();
     sendTextLCD(STATUS_BAR,"GENERATING ANSWERS");
     clearTextLCD(OUTPUT_GPT);
+    changeAlignmentText(OUTPUT_GPT,0);
     changeLightMode(LED_MODE_COLORFILL);
 
     client.println("POST /v1/chat/completions HTTP/1.1");
